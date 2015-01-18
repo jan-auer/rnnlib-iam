@@ -1,0 +1,7 @@
+*.nc
+*.log
+*.std
+*.save
+ascii/
+original/
+lineStrokes/
