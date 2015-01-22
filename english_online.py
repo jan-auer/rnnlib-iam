@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import glob, sys, os, re
+import math, glob, sys, os, re
 from optparse import OptionParser
 from xml.dom.minidom import parse
 
@@ -26,14 +26,19 @@ def closeCdl(f, delimiter=''):
 	f.write(delimiter + ' ;\n\n')
 	f.close()
 
-if len(sys.argv) != 3:
-	print "Usage: english_online.py <std_file> <dataset_name>"
-	exit(1)
+def avg(l): 
+	return math.fsum(l) / len(l)
 
-print "Loading statistical distribution"
-with open(sys.argv[1], 'r') as stdFile:
-	inputMeans = [ float(i) for i in stdFile.readline().split(' ') ]
-	inputStds = [ float(i) for i in stdFile.readline().split(' ') ]
+def var(l):
+	a = avg(l)
+	return reduce(lambda s, x: s + (x - a) ** 2, l) / len(l)
+
+def std(l):
+	return math.sqrt(var(l))
+
+if len(sys.argv) != 2:
+	print "Usage: english_online.py <dataset_name>"
+	exit(1)
 
 # Intermediate files (*.cdl) for NetCDF generation
 seqTagsFile = createCdl('seqTags', '"')
@@ -62,7 +67,7 @@ maxLabelLength = len(max(labelStrings, key=len))
 labelsFile.write('",\n  "'.join(labelStrings))
 
 # Process all active samples in the current training set
-for sample in file(sys.argv[2] + '.txt').readlines():
+for sample in file(sys.argv[1] + '.txt').readlines():
 	basePath = re.sub(r'^(((\w+)-\d+)\w?)$', '\g<3>/\g<2>/\g<1>', sample.strip())
 
 	# Check whether the sample files exist
@@ -96,10 +101,16 @@ for sample in file(sys.argv[2] + '.txt').readlines():
 		inputs = []
 		for stroke in parse(linePath).getElementsByTagName('Stroke'):
 			for point in stroke.getElementsByTagName('Point'):
-				x = (float(point.getAttribute('x')) - inputMeans[0]) / inputStds[0]
-				y = (float(point.getAttribute('y')) - inputMeans[1]) / inputStds[1]
+				x = float(point.getAttribute('x'))
+				y = float(point.getAttribute('y'))
 				inputs += [x, y, 0]
 			inputs[-1] = 1
+
+		# Normalize inputs (use yStd for scaling x and y!)
+		inputAvgs = [ avg(inputs[0::3]), avg(inputs[1::3]), 0 ]
+		inputStds = [ std(inputs[1::3]), std(inputs[1::3]), 1 ]
+		for j in range(0, len(inputs)):
+			inputs[j] = (inputs[j] - inputAvgs[j % 3]) / inputStds[j % 3]
 
 		# Update CDL variables
 		numSeqs += 1

@@ -1,6 +1,6 @@
 set -e
 
-./english_online.py trainset.std $1
+./english_online.py $1
 cat header.cdl seqTags.cdl labels.cdl wordTargetStrings.cdl targetStrings.cdl seqLengths.cdl seqDims.cdl inputs.cdl > $1.cdl
 echo '}' >> $1.cdl
 
