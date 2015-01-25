@@ -126,7 +126,7 @@ for sample in file(sys.argv[1] + '.txt').readlines():
 
 		# Write all data out to the CDL files
 		seqTagsFile.write(imagePath)
-		seqDimsFile.write(seqLength)
+		seqDimsFile.write(seqDims)
 		seqLengthsFile.write(seqLength)
 		targetStringsFile.write(targetString)
 		wordTargetStringsFile.write(wordTargetString)
