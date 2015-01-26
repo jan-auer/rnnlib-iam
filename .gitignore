@@ -1,7 +1,12 @@
+# RNNlib generated files
 *.nc
 *.log
 *.std
 *.save
+*.config
+
+# IAM Database files
+*.txt
 ascii/
 original/
 lineStrokes/
